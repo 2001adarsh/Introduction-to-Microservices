@@ -41,5 +41,22 @@ curl -v http://localhost:9090/
 curl -d 'Adarsh Singh' http://localhost:9090/
 curl -d '{"name": "Abby Mallard", "original_voice_actor": "Joan Cusack", "animated_debut": "Chicken Little"}' -H "Content-T
 ype: application/json" -X POST http://localhost:9090/
+*/
 
+/*
+DEFAULT SERVEMUX:
+While DefaultServeMux is okay for toy programs, you should avoid it in your production code.
+This is because it is accessible to any package that your application imports, including third-party
+packages. Therefore, it could potentially be exploited to expose a malicious handler to the web if
+a package becomes compromised.
+
+self made mux:
+ 	mux := http.NewServeMux()
+	mux.HandleFunc("/", indexHandler)
+*/
+
+/*
+An HTTP ServeMux is essentially a request router that compares incoming requests against a list of predefined URL paths
+and executes the associated handler for the path whenever a match is found. When you don't create your own locally scoped
+ServeMux, the default is used, and it's where methods like http.HandleFunc attach their handlers.
 */
