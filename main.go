@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/2001adarsh/Intro_to_Microservices/handlers"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
@@ -13,12 +14,9 @@ import (
 func main() {
 
 	logOp := log.New(os.Stdout, "product-api", log.LstdFlags)
-
-	//creating the handlers
 	productHandler := handlers.NewProducts(logOp)
 
-	//creating a new serveMux and register the handlers
-	serveMux := http.NewServeMux()
+	serveMux := mux.NewRouter()
 	serveMux.Handle("/", productHandler)
 
 	customServer := &http.Server{
@@ -51,6 +49,7 @@ func main() {
 	cntx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	customServer.Shutdown(cntx)
 }
+
 
 /* Can use local terminal to test these changes using curl commands like:
 Remove-item alias:curl -> on Windows powershell.
