@@ -15,13 +15,11 @@ func main() {
 	logOp := log.New(os.Stdout, "product-api", log.LstdFlags)
 
 	//creating the handlers
-	helloHandler := handlers.NewHello(logOp)
-	goodbyeHandler := handlers.NewGoodBye(logOp)
+	productHandler := handlers.NewProducts(logOp)
 
 	//creating a new serveMux and register the handlers
 	serveMux := http.NewServeMux()
-	serveMux.Handle("/", helloHandler)
-	serveMux.Handle("/goodbye", goodbyeHandler)
+	serveMux.Handle("/", productHandler)
 
 	customServer := &http.Server{
 		Addr:         ":9090",           // configure bind address
