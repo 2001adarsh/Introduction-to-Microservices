@@ -52,6 +52,7 @@ func UpdateProduct(id int, p *Product) error {
 	if err != nil {
 		return err
 	}
+	p.ID = id
 	productList[pos] = p
 	return nil
 }
@@ -59,9 +60,9 @@ func UpdateProduct(id int, p *Product) error {
 var ErrPositionNotFound = fmt.Errorf("Product not found in ProductList")
 
 func getProduct(id int) (int, error) {
-	for _, product := range productList {
+	for idx, product := range productList {
 		if product.ID == id {
-			return id, nil
+			return idx, nil
 		}
 	}
 	return -1, ErrPositionNotFound

@@ -1,3 +1,3 @@
-module github.com/Intro_to_Microservices
+module github.com/2001adarsh/Intro_to_Microservices
 
 go 1.17

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/Intro_to_Microservices/data"
+	"github.com/2001adarsh/Intro_to_Microservices/data"
 	"log"
 	"net/http"
 	"regexp"

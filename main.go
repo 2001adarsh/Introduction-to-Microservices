@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/Intro_to_Microservices/handlers"
+	"github.com/2001adarsh/Intro_to_Microservices/handlers"
 	"log"
 	"net/http"
 	"os"
