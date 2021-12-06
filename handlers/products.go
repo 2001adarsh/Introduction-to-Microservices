@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"github.com/2001adarsh/Intro_to_Microservices/data"
 	"github.com/gorilla/mux"
 	"log"
@@ -66,6 +67,17 @@ func (handler *Products) MiddlewareValidateProduct(next http.Handler) http.Handl
 			http.Error(writer, "Unable to parse body.", http.StatusBadRequest)
 			return
 		}
+		//validate the product
+		if err = prod.ProductValidator(); err != nil {
+			handler.logger.Println("[ERROR] validator failed", err)
+			http.Error(
+				writer,
+				fmt.Sprintf("json validator failed, check again: %s", err),
+				http.StatusBadRequest,
+			)
+			return
+		}
+
 		// add the product to the context
 		ctx := context.WithValue(request.Context(), KeyProduct{}, prod)
 		request = request.WithContext(ctx)
