@@ -17,7 +17,19 @@ func main() {
 	productHandler := handlers.NewProducts(logOp)
 
 	serveMux := mux.NewRouter()
-	serveMux.Handle("/", productHandler)
+	//serveMux.Handle("/", productHandler)
+
+	getRouter := serveMux.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/", productHandler.GetProducts)
+	getRouter.Use(productHandler.MiddlewareValidateProduct)
+
+	putRouter := serveMux.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", productHandler.UpdateProduct)
+	putRouter.Use(productHandler.MiddlewareValidateProduct)
+
+	postRouter := serveMux.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", productHandler.CreateProduct)
+	postRouter.Use(productHandler.MiddlewareValidateProduct)
 
 	customServer := &http.Server{
 		Addr:         ":9090",           // configure bind address
