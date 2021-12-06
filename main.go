@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/2001adarsh/Intro_to_Microservices/handlers"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
@@ -13,13 +14,21 @@ import (
 func main() {
 
 	logOp := log.New(os.Stdout, "product-api", log.LstdFlags)
-
-	//creating the handlers
 	productHandler := handlers.NewProducts(logOp)
 
-	//creating a new serveMux and register the handlers
-	serveMux := http.NewServeMux()
-	serveMux.Handle("/", productHandler)
+	serveMux := mux.NewRouter()
+	//serveMux.Handle("/", productHandler)
+
+	getRouter := serveMux.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/", productHandler.GetProducts)
+
+	putRouter := serveMux.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", productHandler.UpdateProduct)
+	putRouter.Use(productHandler.MiddlewareValidateProduct)
+
+	postRouter := serveMux.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", productHandler.CreateProduct)
+	postRouter.Use(productHandler.MiddlewareValidateProduct)
 
 	customServer := &http.Server{
 		Addr:         ":9090",           // configure bind address
@@ -51,6 +60,7 @@ func main() {
 	cntx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	customServer.Shutdown(cntx)
 }
+
 
 /* Can use local terminal to test these changes using curl commands like:
 Remove-item alias:curl -> on Windows powershell.
