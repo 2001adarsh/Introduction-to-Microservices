@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/2001adarsh/Intro_to_Microservices/handlers"
+	"github.com/2001adarsh/Introduction-to-Microservices/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -60,7 +60,6 @@ func main() {
 	cntx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	customServer.Shutdown(cntx)
 }
-
 
 /* Can use local terminal to test these changes using curl commands like:
 Remove-item alias:curl -> on Windows powershell.

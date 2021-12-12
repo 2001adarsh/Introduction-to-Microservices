@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/2001adarsh/Intro_to_Microservices/data"
+	"github.com/2001adarsh/Introduction-to-Microservices/data"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
