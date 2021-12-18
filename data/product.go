@@ -1,64 +1,48 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"io"
-	"regexp"
+	"log"
 	"time"
 )
 
 //Product defines the structure of an API Product
+// swagger:meta
 type Product struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name" validate:"required"`
-	Description string  `json:"description"`
-	Price       float32 `json:"price" validate:"gt=0"`
-	SKU         string  `json:"sku" validate:"required,sku"`
-	CreatedOn   string  `json:"-"`
-	UpdatedOn   string  `json:"-"`
-	DeletedOn   string  `json:"-"`
+	//id of the product
+	// min:1
+	ID int `json:"id"`
+	// name of the product
+	// required: true
+	Name string `json:"name" validate:"required"`
+	// description of the product
+	Description string `json:"description"`
+	// cost of the product
+	// min: 0
+	Price float32 `json:"price" validate:"gt=0"`
+	// SKU of the product
+	// required: true
+	// example: abc-bcd-def
+	SKU       string `json:"sku" validate:"required,sku"`
+	CreatedOn string `json:"-"`
+	UpdatedOn string `json:"-"`
+	DeletedOn string `json:"-"`
 }
-
-func (p *Product) ProductValidator() error {
-	validate := validator.New()
-	validate.RegisterValidation("sku", validateSKU)
-	return validate.Struct(p)
-}
-
-func validateSKU(fl validator.FieldLevel) bool {
-	//sku is of format abc-bcd-def
-	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
-	matches := re.FindAllString(fl.Field().String(), -1)
-	if len(matches) != 1{
-		return false
-	}
-	return true
-}
-
 
 // Products is a collection of Product
 type Products []*Product
 
-// ToJSON serializes the contents of the collection to JSON
-// NewEncoder provides better performance than json.Unmarshal as it does not
-// have to buffer the output into an in memory slice of bytes
-// this reduces allocations and the overheads of the service
-
-func (p *Products) ToJSON(w io.Writer) error {
-	e := json.NewEncoder(w)
-	return e.Encode(p)
-}
-
-func (p *Product) FromJSON(r io.Reader) error {
-	e := json.NewDecoder(r)
-	return e.Decode(p)
-}
-
 // GetProducts returns a list of products
 func GetProducts() Products {
 	return productList
+}
+
+func GetProductByID(id int) (*Product, error) {
+	productIndex := getProductPosition(id)
+	if productIndex == -1 {
+		return nil, ErrProductNotFound
+	}
+	return productList[productIndex], nil
 }
 
 func AddProduct(p *Product) {
@@ -66,25 +50,38 @@ func AddProduct(p *Product) {
 	productList = append(productList, p)
 }
 
-func UpdateProduct(id int, p *Product) error {
-	pos, err := getProduct(id)
-	if err != nil {
-		return err
+func UpdateProduct(p *Product) error {
+	pos := getProductPosition(p.ID)
+	if pos == -1 {
+		return ErrProductNotFound
 	}
-	p.ID = id
+
+	//update the product in the DB
 	productList[pos] = p
 	return nil
 }
 
-var ErrPositionNotFound = fmt.Errorf("Product not found in ProductList")
+// DeleteProduct deletes a product from the database
+func DeleteProduct(id int) error {
+	pos := getProductPosition(id)
+	log.Println("id,pos are: ", id, pos)
+	if pos == -1 {
+		return ErrProductNotFound
+	}
+	productList = append(productList[:pos], productList[pos+1:]...)
+	return nil
+}
 
-func getProduct(id int) (int, error) {
+// ErrProductNotFound is an error raised when a product can not be found in the database
+var ErrProductNotFound = fmt.Errorf("Product not found")
+
+func getProductPosition(id int) int {
 	for idx, product := range productList {
 		if product.ID == id {
-			return idx, nil
+			return idx
 		}
 	}
-	return -1, ErrPositionNotFound
+	return -1
 }
 
 func getNextID() int {

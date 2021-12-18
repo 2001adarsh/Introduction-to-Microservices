@@ -1,0 +1,95 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  Product:
+    description: Product defines the structure of an API Product
+    properties:
+      description:
+        description: description of the product
+        type: string
+        x-go-name: Description
+      id:
+        description: id of the product
+        format: int64
+        minimum: 1
+        type: integer
+        x-go-name: ID
+      name:
+        description: name of the product
+        type: string
+        x-go-name: Name
+      price:
+        description: cost of the product
+        format: float
+        minimum: 0
+        type: number
+        x-go-name: Price
+      sku:
+        description: SKU of the product
+        example: abc-bcd-def
+        type: string
+        x-go-name: SKU
+    required:
+    - name
+    - sku
+    type: object
+    x-go-package: github.com/2001adarsh/Introduction-to-Microservices/data
+host: localhost
+info:
+  description: Documentation for Product API
+  title: of Product API
+  version: 1.0.0
+paths:
+  /products:
+    get:
+      description: Returns all products in DB as a list
+      operationId: listAllProducts
+      responses:
+        "200":
+          $ref: '#/responses/productResponse'
+        "500":
+          $ref: '#/responses/internalServerError'
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      description: deletes a product from the database
+      operationId: deleteProduct
+      parameters:
+      - description: The ID of the product to delete from database
+        format: int64
+        in: path
+        name: id
+        required: true
+        type: integer
+        x-go-name: ID
+      responses:
+        "200":
+          $ref: '#/responses/noContent'
+      tags:
+      - products
+    get:
+      description: Return a list of products from the database
+      operationId: singleProduct
+      responses:
+        "200":
+          $ref: '#/responses/productResponse'
+        "404":
+          $ref: '#/responses/errorResponse'
+      tags:
+      - products
+produces:
+- application/json
+responses:
+  noContent:
+    description: ""
+  productResponse:
+    description: A list of Products returns in response
+    schema:
+      items:
+        $ref: '#/definitions/Product'
+      type: array
+schemes:
+- http
+swagger: "2.0"
