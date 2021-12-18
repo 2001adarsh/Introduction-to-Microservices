@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"context"
-	"fmt"
 	"github.com/2001adarsh/Introduction-to-Microservices/data"
 	"github.com/gorilla/mux"
 	"log"
@@ -12,76 +10,37 @@ import (
 
 // Products is a http.Handler
 type Products struct {
-	logger *log.Logger
+	logger    *log.Logger
+	validator *data.Validation
 }
 
 // NewProducts creates a products handler with the given logger
-func NewProducts(logger *log.Logger) *Products {
-	return &Products{logger: logger}
+func NewProducts(logger *log.Logger, v *data.Validation) *Products {
+	return &Products{logger: logger, validator: v}
 }
 
-// GET REQUEST - getProducts returns the products from the data store
-func (handler *Products) GetProducts(writer http.ResponseWriter, request *http.Request) {
-	listOfProducts := data.GetProducts()
-	err := listOfProducts.ToJSON(writer)
-	if err != nil {
-		http.Error(writer, "Unable to Marshal the data", http.StatusInternalServerError)
-	}
+// GenericError is a generic error message returned by a server
+type GenericError struct {
+	Message string `json:"message"`
 }
 
-// POST REQUEST - create a new Product and add to ProductList.
-func (handler *Products) CreateProduct(writer http.ResponseWriter, request *http.Request) {
-	handler.logger.Println("Handle POST Product")
-	prod := request.Context().Value(KeyProduct{}).(*data.Product)
-	handler.logger.Printf("Prod: %#v", prod)
-	data.AddProduct(prod)
-}
-
-// PUT REQUEST - update a product with given id number
-func (handler *Products) UpdateProduct(writer http.ResponseWriter, request *http.Request) {
-	var header = mux.Vars(request)
-	id, err := strconv.Atoi(header["id"])
-	if err != nil {
-		http.Error(writer, "Unable to get id from request", http.StatusBadRequest)
-		return
-	}
-	handler.logger.Println("Handle PUT Product", id)
-	prod := request.Context().Value(KeyProduct{}).(*data.Product)
-	handler.logger.Printf("Prod: %#v", prod)
-	err = data.UpdateProduct(id, prod)
-	if err == data.ErrPositionNotFound {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-	} else if err != nil {
-		http.Error(writer, "Problems in getting error: "+err.Error(), http.StatusInternalServerError)
-	}
+// ValidationError is a collection of validation error messages
+type ValidationError struct {
+	Messages []string `json:"messages"`
 }
 
 type KeyProduct struct{}
 
-func (handler *Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		prod := &data.Product{}
-		err := prod.FromJSON(request.Body)
-		if err != nil {
-			handler.logger.Println("[ERROR] deserializing product", err)
-			http.Error(writer, "Unable to parse body.", http.StatusBadRequest)
-			return
-		}
-		//validate the product
-		if err = prod.ProductValidator(); err != nil {
-			handler.logger.Println("[ERROR] validator failed", err)
-			http.Error(
-				writer,
-				fmt.Sprintf("json validator failed, check again: %s", err),
-				http.StatusBadRequest,
-			)
-			return
-		}
+// getProductID returns the product ID from the URL
+// Panics if cannot convert the id into an integer this should never happen as the router ensures that this is a valid number
+func getProductID(request *http.Request) int {
+	// parse the product id from the url
+	vars := mux.Vars(request)
 
-		// add the product to the context
-		ctx := context.WithValue(request.Context(), KeyProduct{}, prod)
-		request = request.WithContext(ctx)
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(writer, request)
-	})
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		//should never happen
+		panic(err)
+	}
+	return id
 }

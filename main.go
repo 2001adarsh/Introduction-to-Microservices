@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/2001adarsh/Introduction-to-Microservices/data"
 	"github.com/2001adarsh/Introduction-to-Microservices/handlers"
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -12,23 +14,37 @@ import (
 )
 
 func main() {
-
 	logOp := log.New(os.Stdout, "product-api", log.LstdFlags)
-	productHandler := handlers.NewProducts(logOp)
+	logOp.Println("[INFO] SERVER STARTUP")
+
+	validator := data.NewValidation()
+
+	//creates handler
+	productHandler := handlers.NewProducts(logOp, validator)
 
 	serveMux := mux.NewRouter()
-	//serveMux.Handle("/", productHandler)
 
 	getRouter := serveMux.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/", productHandler.GetProducts)
+	getRouter.HandleFunc("/products", productHandler.ListAll)
+	getRouter.HandleFunc("/products/{id:[0-9}+}", productHandler.ListSingle)
 
 	putRouter := serveMux.Methods(http.MethodPut).Subrouter()
-	putRouter.HandleFunc("/{id:[0-9]+}", productHandler.UpdateProduct)
+	putRouter.HandleFunc("/products", productHandler.UpdateProduct)
 	putRouter.Use(productHandler.MiddlewareValidateProduct)
 
 	postRouter := serveMux.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/", productHandler.CreateProduct)
+	postRouter.HandleFunc("/products", productHandler.CreateProduct)
 	postRouter.Use(productHandler.MiddlewareValidateProduct)
+
+	deleteRouter := serveMux.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/products/{id:[0-9]+}", productHandler.DeleteProduct)
+
+	// handler for documentation
+	opt := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(opt, nil)
+
+	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
 	customServer := &http.Server{
 		Addr:         ":9090",           // configure bind address
@@ -60,12 +76,3 @@ func main() {
 	cntx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	customServer.Shutdown(cntx)
 }
-
-/* Can use local terminal to test these changes using curl commands like:
-Remove-item alias:curl -> on Windows powershell.
-
-curl -v http://localhost:9090/
-curl -d 'Adarsh Singh' http://localhost:9090/
-curl -d '{"name": "Abby Mallard", "original_voice_actor": "Joan Cusack", "animated_debut": "Chicken Little"}' -H "Content-T
-ype: application/json" -X POST http://localhost:9090/
-*/
