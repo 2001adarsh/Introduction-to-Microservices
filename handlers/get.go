@@ -8,7 +8,7 @@ import (
 // swagger:route GET /products products listAllProducts
 // Returns all products in DB as a list
 // Responses:
-// 	200: productResponse
+// 	200: productsResponse
 // 	500: internalServerError
 
 // ListAll handles GET requests and returns all current products
@@ -26,7 +26,7 @@ func (handler *Products) ListAll(writer http.ResponseWriter, request *http.Reque
 // responses:
 //	200: productResponse
 //	404: errorResponse
-
+//  500: internalServerError
 // ListSingle handles GET requests
 func (handler *Products) ListSingle(writer http.ResponseWriter, request *http.Request) {
 	id := getProductID(request)

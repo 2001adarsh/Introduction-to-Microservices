@@ -1,18 +1,3 @@
-// Package classification of Product API
-//
-// Documentation for Product API
-//
-// Schemes: http
-// Host: localhost
-// BasePath: /
-// Version: 1.0.0
-//
-// Consumes:
-// - application/json
-//
-// Produces:
-// -application/json
-// swagger:meta
 package handlers
 
 import (
@@ -27,26 +12,6 @@ import (
 type Products struct {
 	logger    *log.Logger
 	validator *data.Validation
-}
-
-// A list of Products returns in response
-// swagger:response productResponse
-type productResponseWrapper struct {
-	// All products in the system
-	// in: body
-	Body []data.Product
-}
-
-// swagger:parameters deleteProduct
-type productIdParameterWrapper struct {
-	// The ID of the product to delete from database
-	// in: path
-	// required: true
-	ID int `json:"id"`
-}
-
-// swagger:response noContent
-type noContentWrapper struct {
 }
 
 // NewProducts creates a products handler with the given logger

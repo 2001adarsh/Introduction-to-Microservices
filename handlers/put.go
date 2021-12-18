@@ -5,6 +5,13 @@ import (
 	"net/http"
 )
 
+// swagger:route PUT /products products updateProduct
+// Update a products details
+//
+// responses:
+//	201: noContent
+//  404: errorResponse
+//  422: errorValidation
 // UpdateProduct handles PUT requests to update products
 func (handler *Products) UpdateProduct(writer http.ResponseWriter, request *http.Request) {
 	prod := request.Context().Value(KeyProduct{}).(*data.Product)

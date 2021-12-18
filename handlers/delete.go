@@ -9,7 +9,8 @@ import (
 // deletes a product from the database
 // responses:
 //	200: noContent
-
+//  404: errorResponse
+// 	500: internalServerError
 // DeleteProduct handles DELETE request to remove items from database
 func (handler *Products) DeleteProduct(writer http.ResponseWriter, request *http.Request) {
 	id := getProductID(request)

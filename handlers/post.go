@@ -5,6 +5,13 @@ import (
 	"net/http"
 )
 
+// swagger:route POST /products products createProduct
+// Create a new product
+//
+// responses:
+//	200: productResponse
+//  422: errorValidation
+//  501: errorResponse
 // CreateProduct handles POST requests to add new products
 func (handler *Products) CreateProduct(writer http.ResponseWriter, request *http.Request) {
 	handler.logger.Println("[DEBUG] Creating new product")
