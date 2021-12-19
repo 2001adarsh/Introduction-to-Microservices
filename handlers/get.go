@@ -29,9 +29,15 @@ func (handler *Products) ListAll(writer http.ResponseWriter, request *http.Reque
 //  500: internalServerError
 // ListSingle handles GET requests
 func (handler *Products) ListSingle(writer http.ResponseWriter, request *http.Request) {
-	id := getProductID(request)
-	handler.logger.Println("[DEBUG] Getting records for id:", id)
-	prod, err := data.GetProductByID(id)
+	id := getProductID(handler, request)
+	var err error
+	var prod interface{}
+	if id == -1 {
+		err = GenericError{Message: "Id not parsable from request."}
+	} else {
+		handler.logger.Println("[DEBUG] Getting records for id:", id)
+		prod, err = data.GetProductByID(id)
+	}
 	switch err {
 	case nil:
 	case data.ErrProductNotFound:

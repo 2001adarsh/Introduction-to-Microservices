@@ -13,10 +13,17 @@ import (
 // 	500: internalServerError
 // DeleteProduct handles DELETE request to remove items from database
 func (handler *Products) DeleteProduct(writer http.ResponseWriter, request *http.Request) {
-	id := getProductID(request)
-	handler.logger.Println("[DEBUG] deleting record id", id)
+	id := getProductID(handler, request)
+	var err error
+	if id == -1 {
+		err = GenericError{
+			Message: "Id not parsable from request.",
+		}
+	} else {
+		handler.logger.Println("[DEBUG] deleting record id", id)
+		err = data.DeleteProduct(id)
+	}
 
-	err := data.DeleteProduct(id)
 	if err == data.ErrProductNotFound {
 		handler.logger.Println("[ERROR] deleting record id does not exist")
 		writer.WriteHeader(http.StatusNotFound)
