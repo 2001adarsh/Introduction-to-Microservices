@@ -5,6 +5,7 @@ import (
 	"github.com/2001adarsh/Introduction-to-Microservices/product-service/data"
 	"github.com/2001adarsh/Introduction-to-Microservices/product-service/handlers"
 	"github.com/go-openapi/runtime/middleware"
+	gohandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -46,13 +47,17 @@ func main() {
 	getRouter.Handle("/docs", sh)
 	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
+	// Creating handler for CORS to work
+	// can append "*" in []string{} when to make it a public api.
+	corsHandler := gohandler.CORS(gohandler.AllowedOrigins([]string{"http://localhost:3000"}))
+
 	customServer := &http.Server{
-		Addr:         ":9090",           // configure bind address
-		Handler:      serveMux,          // set the default handler
-		ErrorLog:     logOp,             //set the logger for server
-		ReadTimeout:  1 * time.Second,   // max time to read request to the client
-		WriteTimeout: 1 * time.Second,   //max time to write a response to the client
-		IdleTimeout:  120 * time.Second, //max time for connections using TCP Keep-Alive
+		Addr:         ":9090",               // configure bind address
+		Handler:      corsHandler(serveMux), // set the default handler
+		ErrorLog:     logOp,                 //set the logger for server
+		ReadTimeout:  1 * time.Second,       // max time to read request to the client
+		WriteTimeout: 1 * time.Second,       //max time to write a response to the client
+		IdleTimeout:  120 * time.Second,     //max time for connections using TCP Keep-Alive
 	}
 
 	//start the server
