@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"github.com/2001adarsh/Introduction-to-Microservices/data"
-	"github.com/2001adarsh/Introduction-to-Microservices/handlers"
+	"github.com/2001adarsh/Introduction-to-Microservices/product-service/data"
+	"github.com/2001adarsh/Introduction-to-Microservices/product-service/handlers"
 	"github.com/go-openapi/runtime/middleware"
+	gohandler "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -27,7 +28,6 @@ func main() {
 	getRouter := serveMux.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/products", productHandler.ListAll)
 	getRouter.HandleFunc("/products/{id:[0-9]+}", productHandler.ListSingle)
-	getRouter.Use(productHandler.MiddlewareValidateProduct)
 
 	putRouter := serveMux.Methods(http.MethodPut).Subrouter()
 	putRouter.HandleFunc("/products", productHandler.UpdateProduct)
@@ -39,7 +39,6 @@ func main() {
 
 	deleteRouter := serveMux.Methods(http.MethodDelete).Subrouter()
 	deleteRouter.HandleFunc("/products/{id:[0-9]+}", productHandler.DeleteProduct)
-	deleteRouter.Use(productHandler.MiddlewareValidateProduct)
 
 	// handler for documentation
 	opt := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
@@ -48,13 +47,17 @@ func main() {
 	getRouter.Handle("/docs", sh)
 	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
+	// Creating handler for CORS to work
+	// can append "*" in []string{} when to make it a public api.
+	corsHandler := gohandler.CORS(gohandler.AllowedOrigins([]string{"http://localhost:3000"}))
+
 	customServer := &http.Server{
-		Addr:         ":9090",           // configure bind address
-		Handler:      serveMux,          // set the default handler
-		ErrorLog:     logOp,             //set the logger for server
-		ReadTimeout:  1 * time.Second,   // max time to read request to the client
-		WriteTimeout: 1 * time.Second,   //max time to write a response to the client
-		IdleTimeout:  120 * time.Second, //max time for connections using TCP Keep-Alive
+		Addr:         ":9090",               // configure bind address
+		Handler:      corsHandler(serveMux), // set the default handler
+		ErrorLog:     logOp,                 //set the logger for server
+		ReadTimeout:  1 * time.Second,       // max time to read request to the client
+		WriteTimeout: 1 * time.Second,       //max time to write a response to the client
+		IdleTimeout:  120 * time.Second,     //max time for connections using TCP Keep-Alive
 	}
 
 	//start the server
