@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/2001adarsh/Introduction-to-Microservices/data"
-	"github.com/2001adarsh/Introduction-to-Microservices/handlers"
+	"github.com/2001adarsh/Introduction-to-Microservices/product-service/data"
+	"github.com/2001adarsh/Introduction-to-Microservices/product-service/handlers"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
 	"log"
@@ -27,7 +27,6 @@ func main() {
 	getRouter := serveMux.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/products", productHandler.ListAll)
 	getRouter.HandleFunc("/products/{id:[0-9]+}", productHandler.ListSingle)
-	getRouter.Use(productHandler.MiddlewareValidateProduct)
 
 	putRouter := serveMux.Methods(http.MethodPut).Subrouter()
 	putRouter.HandleFunc("/products", productHandler.UpdateProduct)
@@ -39,7 +38,6 @@ func main() {
 
 	deleteRouter := serveMux.Methods(http.MethodDelete).Subrouter()
 	deleteRouter.HandleFunc("/products/{id:[0-9]+}", productHandler.DeleteProduct)
-	deleteRouter.Use(productHandler.MiddlewareValidateProduct)
 
 	// handler for documentation
 	opt := middleware.RedocOpts{SpecURL: "/swagger.yaml"}

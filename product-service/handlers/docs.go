@@ -15,7 +15,7 @@
 // swagger:meta
 package handlers
 
-import "github.com/2001adarsh/Introduction-to-Microservices/data"
+import "github.com/2001adarsh/Introduction-to-Microservices/product-service/data"
 
 // NOTE: Types defined here are purely for documentation purposes
 // these types are not used by any of the handlers
